@@ -3,7 +3,7 @@
 README introdutorio simples.
 
 Baixe o Repositorio em
-git clone https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git
+git clone https://github.com/VitorJacintho/simple-task-manager.git
 
 crie o arquivo .env contendo as informações do seu sql server
 ex:

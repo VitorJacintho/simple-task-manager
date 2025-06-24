@@ -15,6 +15,7 @@ interface Task {
   elapsed_ms?: number;
   tp_status: string;
   tp_situation?: string
+  cd_client?: string; // ✅ Adicione isso
 };
 
 
@@ -32,22 +33,10 @@ export default function TaskList() {
   const [newInteractionDesc, setNewInteractionDesc] = useState('');
   const [showInteractionForm, setShowInteractionForm] = useState(false);
 
-    const [showSignUp, setShowSignUp] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  
+  const [clients, setClients] = useState<any[]>([]); 
+  const [newClientName, setNewClientName] = useState('');
+  const [selectedClient, setSelectedClient] = useState('');
 
-
-  const handleSignUpClick = () => {
-    setShowSignUp(true);
-    setShowLogin(false);
-  };
-
-  const handleLoginClick = () => {
-    setShowLogin(true);
-    setShowSignUp(false);
-  };
-
-  
 
   // Retorna a Task e suas Informaões
   const fetchTasks = async () => {
@@ -162,6 +151,8 @@ const getProgress = (task) => {
     // Quando a Task for selecionada, defina `editingTask` com a Task correta
     if (openTaskDetail !== task.cd_task) {
       setEditingTask(task);  // Define a Task como edição
+      setSelectedClient(task.cd_client || ''); // ✅ Define cliente atual da task
+
     }
   };
 
@@ -180,7 +171,7 @@ const getProgress = (task) => {
     const { cd_task, nm_title, tp_situation, ds_task } = editingTask;
 
     try {
-      await axios.patch(`http://192.168.0.158:3000/tasks/${cd_task}`, {nm_title, tp_situation, ds_task });
+      await axios.patch(`http://192.168.0.158:3000/tasks/${cd_task}`, {nm_title, tp_situation, ds_task, cd_client: selectedClient });
       setEditingTask({cd_task});  
       fetchTasks();
     } catch (error) {
@@ -194,12 +185,8 @@ const getProgress = (task) => {
   };
 
 
-const handleEditTime = () => {
-
-}
-
-
   // @ts-ignore
+  // adiciona uma Interação
   const handleAddInteraction = async (task) => {
     const res = await axios.get(`http://192.168.0.158:3000/tasks/${task.cd_task}`);
     const timeElapsed = res.data.elapsed_ms;
@@ -230,7 +217,20 @@ const handleEditTime = () => {
   };
 
 
+  const fetchClients = async () => {
+    const res = await axios.get('http://192.168.0.158:3000/clients');
+    setClients(res.data);
+  };
 
+  // Função para criar um novo cliente
+  const handleAddClient = async () => {
+    const res = await axios.post('http://192.168.0.158:3000/clients', {
+      nm_client: newClientName,
+    });
+    setClients((prevClients) => [...prevClients, res.data]);
+    setNewClientName('');
+    setSelectedClient(res.data.cd_client);
+  };
 
   
 useEffect(() => {
@@ -264,7 +264,61 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [taskTimers]);
 
+function download(filename: string, text: string) {
+  const element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
 
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+
+async function textToExport(taskCode: string) {
+  const res = await axios.get(`http://192.168.0.158:3000/tasks/${taskCode}`);
+
+  const resInteractions = await axios.get(`http://192.168.0.158:3000/tasks-interactions?cd_task=${res.data.cd_task}`);
+
+  const resClient = await axios.get(`http://192.168.0.158:3000/clients/${res.data.cd_client}`);
+
+
+
+  const elapsedTime =  formatTime(res.data.elapsed_ms);
+  const goalTime =  formatTime(res.data.goal_ms);
+
+  let situationValue = "Indefinido"
+
+  if (res.data.tp_situation == "P")
+    situationValue = "Pendente";
+  else if (res.data.tp_situation == "F")
+    situationValue = "Finalizado";
+
+  const interacoes = interactionsMap[res.data.cd_task]
+    ?.map((i, idx) => `  ${idx + 1}. ${formatTime(i.tm_elapsed)}: ${i.ds_interaction}`)
+    .join('\n') || '  (sem interações registradas)';
+
+
+  const textoParaExportar = `
+  Tarefa: ${res.data.nm_title}
+  Tempo Realizado: ${elapsedTime}
+  Tempo Maximo: ${goalTime}
+  Cliente: ${resClient.data.nm_client}
+  Situação: ${situationValue}
+
+  Descrição: ${res.data.ds_task || '(sem descrição)'}
+
+  ---------- Interações ----------
+
+${interacoes || 'Sem Interações'} 
+    
+`;
+
+download(`${res.data.nm_title} - ${resClient.data.nm_client}.txt`,  textoParaExportar);
+}
 
 
   // Pausar tarefas ao fechar ou recarregar a página
@@ -287,6 +341,7 @@ useEffect(() => {
 
   useEffect(() => {
   fetchTasks();
+  fetchClients();
 }, []);
 
   
@@ -388,6 +443,36 @@ useEffect(() => {
                               <option value="I">Indefinido</option>
                             </select>
 
+                            <label htmlFor="client">Cliente:</label>
+                            <select
+                              id="client-select"
+                              value={selectedClient}
+                              onChange={(e) => setSelectedClient(e.target.value)}
+                            >
+                              <option value="">Selecione um cliente</option>
+                              {clients.map((client) => (
+                                <option key={client.cd_client} value={client.cd_client}>
+                                  {client.nm_client}
+                                </option>
+                              ))}
+                              <option value="new">Adicionar Novo Cliente</option>
+                            </select>
+
+                            {/* Formulário para adicionar um novo cliente */}
+                            {selectedClient === 'new' && (
+                              <div className="new-client-form">
+                                <input
+                                  type="text"
+                                  placeholder="Nome do novo cliente"
+                                  value={newClientName}
+                                  onChange={(e) => setNewClientName(e.target.value)}
+                                />
+                                <button type="button" onClick={handleAddClient}>
+                                  Adicionar Cliente
+                                </button>
+                              </div>
+                            )}
+
                             <label htmlFor="description">Descrição:</label>
                             <textarea
                               id="description"
@@ -400,7 +485,7 @@ useEffect(() => {
                             <div className="action-buttons">
                               <button className="task-detail-save-button" onClick={handleSave}>Salvar</button>
                               <button className="task-detail-undo-button" onClick={handleCancel}>Desfazer</button>
-                              <button className="task-export-button" >Exportar</button>
+                              <button className="task-export-button" onClick={() => textToExport(task.cd_task)}>Exportar</button>
 
                               <button className="task-edit-time-button" onClick={() => setShowEditTime(true)}>Editar Tempo Descorrido</button>
                               {showEditTime && (
@@ -452,10 +537,6 @@ useEffect(() => {
           })}
         </tbody>
       </table>
-      {/* <div className="buttons">
-        <button className="btn" onClick={handleSignUpClick}>Criar Conta TESTE</button>
-        <button className="btn" onClick={handleLoginClick}>Login TESTE</button>
-      </div> */}
     </div>
   );
 }

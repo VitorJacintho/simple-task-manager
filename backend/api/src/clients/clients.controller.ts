@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 
 @Controller('clients')  // A rota será /clients
@@ -14,5 +14,10 @@ export class ClientsController {
   @Get()  // Rota para o GET /clients
   findAll() {
     return this.clientsService.findAll();
+  }
+
+  @Get(':cd_client')
+  findOne(@Param('cd_client') cd_client: string) {
+    return this.clientsService.findOne(cd_client);
   }
 }
