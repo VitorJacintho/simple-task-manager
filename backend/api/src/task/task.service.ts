@@ -11,16 +11,51 @@ export class TaskService {
     return this.prisma.task.create({ data });
   }
 
-  async findAllByUser(cd_user: string) {
-    return this.prisma.task.findMany({
-      where: { cd_user },
+  async findAllByUser(nm_micro: string) {
+    const tasks = await this.prisma.task.findMany({
+      where: { nm_micro: nm_micro },
       orderBy: { createdAt: 'desc' },
     });
+
+    const updatedTasks = tasks.map(task => {
+      let elapsed_ms = task.elapsed_ms || 0;
+
+      if (task.tp_status === 'S' && task.startedAt) {
+        const now = new Date();
+        elapsed_ms += now.getTime() - task.startedAt.getTime();
+      }
+
+      return {
+        ...task,
+        elapsed_ms,
+      };
+    });
+
+    return updatedTasks;
   }
 
+
+
   async findOne(cd_task: string) {
-    return this.prisma.task.findUnique({ where: { cd_task } });
+    const task = await this.prisma.task.findUnique({
+      where: { cd_task },
+    });
+
+    if (!task) return null;
+
+    let elapsed_ms = task.elapsed_ms || 0;
+
+    if (task.tp_status === 'S' && task.startedAt) {
+      const now = new Date();
+      elapsed_ms += now.getTime() - task.startedAt.getTime();
+    }
+
+    return {
+      ...task,
+      elapsed_ms,
+    };
   }
+
 
   async update(cd_task: string, data: Prisma.TaskUpdateInput) {
     return this.prisma.task.update({
@@ -54,5 +89,38 @@ export class TaskService {
     },
   });
   }
+
+  async startTask(cd_task: string) {
+  return this.prisma.task.update({
+    where: { cd_task },
+    data: {
+      tp_status: 'S',
+      startedAt: new Date(),
+    },
+  });
+}
+
+async pauseTask(cd_task: string) {
+  const task = await this.prisma.task.findUnique({
+    where: { cd_task },
+  });
+
+  if (!task) return null;
+
+  let extraMs = 0;
+  if (task.startedAt) {
+    extraMs = new Date().getTime() - task.startedAt.getTime();
+  }
+
+  return this.prisma.task.update({
+    where: { cd_task },
+    data: {
+      tp_status: 'P',
+      elapsed_ms: (task.elapsed_ms || 0) + extraMs,
+      startedAt: null,
+    },
+  });
+}
+
 
 }

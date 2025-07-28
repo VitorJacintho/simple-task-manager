@@ -1,4 +1,3 @@
-// src/task/task.controller.ts
 import {
   Controller,
   Get,
@@ -12,6 +11,7 @@ import {
 import { TaskService } from './task.service';
 import { Prisma } from '@prisma/client';
 
+
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -22,8 +22,8 @@ export class TaskController {
   }
 
   @Get()
-  findAll(@Query('cd_user') cd_user: string) {
-    return this.taskService.findAllByUser(cd_user);
+  findAll(@Query('nm_micro') nm_micro: string) {
+    return this.taskService.findAllByUser(nm_micro);
   }
 
   @Get(':cd_task')
@@ -43,7 +43,7 @@ export class TaskController {
   }
 
   
-  @Patch(':cd_task') // Rota para atualização detalhada
+  @Patch(':cd_task')
   async updateDetail(
     @Param('cd_task') cd_task: string,
     @Body() { ds_task, tp_situation, nm_title, cd_client }: { ds_task: string, tp_situation: string, nm_title: string, cd_client: string }
@@ -51,12 +51,24 @@ export class TaskController {
     return this.taskService.update_detail(cd_task, ds_task, tp_situation, nm_title, cd_client);
   }
 
-  @Patch(':cd_task') // Rota para atualização detalhada
+  @Patch(':cd_task')
   async updateCurrentTime(
     @Param('cd_task') cd_task: string,
     @Body() { elapsed_ms }: { elapsed_ms: number }
   ) {
     return this.taskService.update_current_time(cd_task, elapsed_ms);
+  }
+
+  @Patch(':cd_task/start')
+  startTask(@Param('cd_task') cd_task: string) {
+    return this.taskService.startTask(cd_task);
+  }
+
+  @Patch(':cd_task/pause')
+  pauseTask(
+    @Param('cd_task') cd_task: string,
+  ) {
+    return this.taskService.pauseTask(cd_task);
   }
 
 

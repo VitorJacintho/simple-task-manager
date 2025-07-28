@@ -6,11 +6,12 @@ async function bootstrap() {
 
   // Habilitar CORS
   app.enableCors({
-    origin: 'http://192.168.0.158:5000',  // URL do seu front-end
+    origin: 'http://192.168.0.158:5000',  
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,  // Se precisar de cookies ou credenciais
+    credentials: true, 
   });
 
   await app.listen(3000);
+
 }
 bootstrap();

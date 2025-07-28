@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 
-@Controller('clients')  // A rota será /clients
+@Controller('clients')  
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
@@ -11,7 +11,7 @@ export class ClientsController {
     return this.clientsService.create({ nm_client: nm_client });
   }
 
-  @Get()  // Rota para o GET /clients
+  @Get()  
   findAll() {
     return this.clientsService.findAll();
   }

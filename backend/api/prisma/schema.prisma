@@ -7,29 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  cd_user         String   @id @default(uuid())
-  nm_user         String
-  ds_email        String   @unique
-  ds_password     String
-  profile_picture String?
-  obj_tasks       Task[]   @relation("UserTasks")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
 model Task {
   cd_task           String              @id @default(uuid())
   nm_title          String
   ds_task           String?
   tp_situation      String?             @default("I") @db.Char(1) //'I', 'P', 'F'
-  cd_user           String
-  user              Users               @relation("UserTasks", fields: [cd_user], references: [cd_user])
+  nm_micro          String
   elapsed_ms        Int                 @default(0) // quanto tempo já passou
   goal_ms           Int? // tempo máximo definido (fixo)
   tp_status         String              @default("O") @db.Char(1) // 'O', 'S', 'P', 'F'
   cd_client         String?
   createdAt         DateTime            @default(now())
+  startedAt         DateTime?
   Task_Interactions Task_Interactions[]
   Clients           Clients?            @relation("ClientsTasks", fields: [cd_client], references: [cd_client])
 }
@@ -49,4 +38,33 @@ model Clients {
   nm_client String?
 
   Task Task[] @relation("ClientsTasks")
+}
+
+model Task_Register {
+  cd_register  String   @id
+  cd_task      String
+  nm_title     String
+  ds_task      String?
+  tp_situation String
+  nm_micro     String
+  elapsed_ms   Int
+  goal_ms      Int?
+  tp_status    String
+  cd_client    String?
+  createdAt    DateTime
+}
+
+model Task_Interactions_Register {
+  cd_register         String  @id
+  cd_task_interaction Int
+  cd_task             String
+  ds_interaction      String?
+  tm_elapsed          Int
+  vl_order            Int
+}
+
+model Users_Micro {
+  cd_user_micro Int    @id @default(autoincrement())
+  nm_micro      String
+  nm_user       String
 }

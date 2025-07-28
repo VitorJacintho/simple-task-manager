@@ -7,12 +7,13 @@ html, body {
   color: #333;
   height: 100%;
   width: 100%;
-  display: flex;
   justify-content: center;
-  align-items: center;
+  overflow-y: auto;        
+  display: block;   
+
+
+
 }
-
-
 
 .title-wrapper {
   display: flex;
@@ -90,6 +91,10 @@ html, body {
 
 .btn-delete {
   background-color: #e74c3c;
+}
+
+.btn-register {
+    background-color: #1e88e5;
 }
 
 .btn:hover {
@@ -193,7 +198,6 @@ textarea {
 
 button {
   padding: 8px 12px;
-  background-color: #007bff;
   border: none;
   border-radius: 5px;
   cursor: pointer;

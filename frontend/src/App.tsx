@@ -1,13 +1,28 @@
-// App.tsx
-import TaskList from './TaskList'; // ajuste o caminho conforme sua pasta
-import './index.css'; // ou 'tailwind.css' se estiver com arquivo próprio
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AppLayout from "./@Menu/AppLayout";
+import TaskList from "./Tasks/TaskList";
+import Home from "./Home/Home";
+import SplashScreen from "./SplashScreen";
+import { useState } from "react";
+import Assistent from "./Assistent/assistent";
 
 function App() {
+  const [splashFinished, setSplashFinished] = useState(false);
+
+  if (!splashFinished) {
+    return <SplashScreen onFinish={() => setSplashFinished(true)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <TaskList />
-    </div>
+    <BrowserRouter>
+      <AppLayout>
+        <Routes>
+          <Route path="/Home" element={<Home />} />
+          <Route path="/Tasks" element={<TaskList />} />
+          <Route path="/assistente" element={<Assistent />} />
+        </Routes>
+      </AppLayout>
+    </BrowserRouter>
   );
 }
 

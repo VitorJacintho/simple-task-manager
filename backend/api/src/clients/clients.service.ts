@@ -6,7 +6,7 @@ export class ClientsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.clients.findMany();  // Retorna todos os clientes
+    return this.prisma.clients.findMany();  
   }
 
   async create(data) {

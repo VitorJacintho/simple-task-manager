@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsBoolean, IsDateString, IsBase64 } from 'class-v
 export class CreateTaskDto {
   nm_title: string;
   ds_task?: string;
-  cd_user: string;
+  nm_micro: string;
   goal_ms?: number;
   elapsed_ms?: number;
   tp_status: string;

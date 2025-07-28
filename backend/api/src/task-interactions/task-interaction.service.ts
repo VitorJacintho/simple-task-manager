@@ -1,4 +1,3 @@
-// src/task/task.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -7,9 +6,6 @@ import { Prisma } from '@prisma/client';
 export class TaskInteractionService {
   constructor(private prisma: PrismaService) {}
 
-  // async create(data: Prisma.Task_InteractionsCreateInput) {
-  //   return this.prisma.task_Interactions.create({ data });
-  // }
   async create(data: Prisma.Task_InteractionsCreateInput) {
     return this.prisma.task_Interactions.create({ data });
   }

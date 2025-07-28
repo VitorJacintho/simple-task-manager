@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
-import { PrismaModule } from '../prisma/prisma.module';  // Certifique-se de que PrismaModule está importado corretamente
+import { PrismaModule } from '../prisma/prisma.module';  
 
 @Module({
-  imports: [PrismaModule],  // PrismaModule deve ser importado corretamente
+  imports: [PrismaModule],  
   controllers: [ClientsController],
   providers: [ClientsService],
 })
